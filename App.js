@@ -12,24 +12,7 @@ import {Text, View, StyleSheet, Animated} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-function HomeScreen({navigation, route, fadeIn, fadeOut, fadeAnim, resetAnim}) {
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('tabPress', e => {
-      console.log('Focus Home ', e);
-      e.preventDefault();
-      fadeOut(() => navigation.navigate(route.name));
-    });
-    return unsubscribe;
-  }, [navigation, fadeOut, route]);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', e => {
-      console.log('Focus Home ', e);
-      fadeIn();
-    });
-    return unsubscribe;
-  }, [navigation, fadeIn]);
-
+function HomeScreen({fadeAnim}) {
   return (
     <Animated.View style={{...styles.screen, opacity: fadeAnim}}>
       <Text>Home!</Text>
@@ -37,30 +20,7 @@ function HomeScreen({navigation, route, fadeIn, fadeOut, fadeAnim, resetAnim}) {
   );
 }
 
-function SettingsScreen({
-  navigation,
-  route,
-  fadeAnim,
-  fadeOut,
-  fadeIn,
-  resetAnim,
-}) {
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('tabPress', e => {
-      console.log('Tab Settings  ', e);
-      e.preventDefault();
-      fadeOut(() => navigation.navigate(route.name));
-    });
-    return unsubscribe;
-  }, [navigation, fadeOut, route]);
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', e => {
-      console.log('Focus Settings: ', e);
-      fadeIn();
-    });
-    return unsubscribe;
-  }, [navigation, fadeIn]);
-
+function SettingsScreen({fadeAnim}) {
   return (
     <Animated.View style={{...styles.screen, opacity: fadeAnim}}>
       <Text>Settings!</Text>
@@ -112,30 +72,24 @@ export default function App() {
     fadeAnim.setValue(0);
   }, [fadeAnim]);
 
+  const listeners = ({navigation, route}) => ({
+    tabPress: e => {
+      e.preventDefault();
+      fadeOut(() => navigation.navigate(route.name));
+    },
+    focus: e => {
+      fadeIn();
+    },
+  });
+
   return (
     <NavigationContainer>
       <Tab.Navigator>
-        <Tab.Screen name="Home">
-          {props => (
-            <HomeScreen
-              {...props}
-              fadeAnim={fadeAnim}
-              fadeIn={fadeIn}
-              fadeOut={fadeOut}
-              resetAnim={resetAnim}
-            />
-          )}
+        <Tab.Screen name="Home" listeners={listeners}>
+          {props => <HomeScreen {...props} fadeAnim={fadeAnim} />}
         </Tab.Screen>
-        <Tab.Screen name="Settings">
-          {props => (
-            <SettingsScreen
-              {...props}
-              fadeAnim={fadeAnim}
-              fadeIn={fadeIn}
-              fadeOut={fadeOut}
-              resetAnim={resetAnim}
-            />
-          )}
+        <Tab.Screen name="Settings" listeners={listeners}>
+          {props => <SettingsScreen {...props} fadeAnim={fadeAnim} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
