@@ -12,17 +12,19 @@ import {Text, View, StyleSheet, Animated} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-function HomeScreen({fadeAnim}) {
+function HomeScreen({fadeAnim, scale}) {
   return (
-    <Animated.View style={{...styles.screen, opacity: fadeAnim}}>
+    <Animated.View
+      style={{...styles.screen, opacity: fadeAnim, transform: [{scale}]}}>
       <Text>Home!</Text>
     </Animated.View>
   );
 }
 
-function SettingsScreen({fadeAnim}) {
+function SettingsScreen({fadeAnim, scale}) {
   return (
-    <Animated.View style={{...styles.screen, opacity: fadeAnim}}>
+    <Animated.View
+      style={{...styles.screen, opacity: fadeAnim, transform: [{scale}]}}>
       <Text>Settings!</Text>
     </Animated.View>
   );
@@ -44,28 +46,43 @@ export const AnimatedFadeThroudh = () => {};
 
 export default function App() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.92)).current;
 
   const fadeIn = useCallback(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 3000,
-      useNativeDriver: false,
-    }).start();
-  }, [fadeAnim]);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, scale]);
 
   const fadeOut = useCallback(
     navigate => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 3000,
-        useNativeDriver: false,
-      }).start(({finished}) => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.92,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(({finished}) => {
         if (finished) {
           navigate();
         }
       });
     },
-    [fadeAnim],
+    [fadeAnim, scale],
   );
 
   const resetAnim = useCallback(() => {
@@ -86,10 +103,12 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator>
         <Tab.Screen name="Home" listeners={listeners}>
-          {props => <HomeScreen {...props} fadeAnim={fadeAnim} />}
+          {props => <HomeScreen {...props} fadeAnim={fadeAnim} scale={scale} />}
         </Tab.Screen>
         <Tab.Screen name="Settings" listeners={listeners}>
-          {props => <SettingsScreen {...props} fadeAnim={fadeAnim} />}
+          {props => (
+            <SettingsScreen {...props} fadeAnim={fadeAnim} scale={scale} />
+          )}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
